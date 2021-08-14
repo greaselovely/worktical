@@ -8,8 +8,9 @@ environment using native tools or tools
 that are installed as core OS utilities
 
 
-execute the script and any sleep commands inside default to .3
+execute the script and any sleep commands inside default to .3 or 
 execute the script with a float/integer after and that is the sleep timer:
+
 ie... ./worktical .01
 
 Tested on OSX, RHEL and Ubuntu
