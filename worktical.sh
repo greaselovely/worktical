@@ -9,7 +9,7 @@
 
 # ascii images are base64 encoded to keep them intact and decoded 
 # at runtime so that they appear as expected.
-# also did it for 'reasonable obfuscation' as to not ruin the surprise “¯\_(ツ)_/¯“
+# also did it for 'reasonable obfuscation' as to not ruin the surprise ¯\_(ツ)_/¯
 # as long as the base64 string is one line with no CR / LF 
 # it will work as expected  
 
