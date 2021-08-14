@@ -137,7 +137,6 @@ function searchtical(){
 }
 
 function hextical(){
-	echo $FUNCNAME
 	tput cup 0 0
 	for file in $(find ${HOME} -maxdepth 1 -type f | sort -R)
 		do
@@ -147,7 +146,6 @@ function hextical(){
 }
 
 function statical(){
-	echo $FUNCNAME
 	for file in $(find ${HOME} -maxdepth 1 -type f)
 		do
 			clear
