@@ -15,6 +15,7 @@
 
 # to do
 # incorporate tmux like hollywood.  I dig that.
+# set term width: https://stackoverflow.com/questions/5243445/bash-command-to-change-size-of-bash-window
 
 # can be run with $1 being specific to change the sleep timer within the script
 # if not specified, it defaults to .3 seconds.  try worktical.sh .1 for fast, worktical.sh 3 for super slow.
