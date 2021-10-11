@@ -17,9 +17,11 @@
 # incorporate tmux like hollywood.  I dig that.
 # set term width: https://stackoverflow.com/questions/5243445/bash-command-to-change-size-of-bash-window
 # just use a lame local fake log file : https://www.thegeekstuff.com/2011/08/linux-var-log-files/
+# also do a list of log files, determine which is readable ie...(if [ -r filename ] )
 
 # can be run with $1 being specific to change the sleep timer within the script
 # if not specified, it defaults to .3 seconds.  try worktical.sh .1 for fast, worktical.sh 3 for super slow.
+# to run a specific function, use worktical.sh help, or --h, or -h, or shirt (we're just looking for 'h')
 
 # this is a typical log file that we'll use
 # change it or copy something into this location for it to run.
@@ -28,17 +30,14 @@
 
 log=/var/log/dmesg
 
-# console to green
-tput setaf 2
-# hide cursor
-tput civis
 
-if [[ $1 == "" ]]
-        then
-                sec=".3"
-        else
-                sec=$1
-fi
+function normalize () {
+	# console to green
+	tput setaf 2
+	# hide cursor
+	tput civis
+}
+
 
 function eyetical(){
         clear
@@ -57,22 +56,20 @@ function alientical(){
 function ufotical(){
         clear
     ufo="CgoKCgoKCgoKCgogCQkJICAgICAgICAgICAgICAgICAgICAgIyMjIyMjIyMjIyMjCiAgICAgICAgICAgICAgCQkJCSAjIyMjIyMjIyMjIyMjIyMjIyMjIyAKICAgICAgICAgCQkJICAgICAgICMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIwoJCQkgICAgICAgICAgICAgIyMjIyAgIyMjIyAgIyMjIyAgIyMjIyAgIyMjIwoJCQkgICAgICAgICAgICMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIAoJCQkgICAgICAgICAgICAgICAjIyMjIyMgICAgIyMjIyAgICAjIyMjIyMKCQkJICAgICAgICAgICAgICAgICAjIyAgICAgICAgICAgICAgICAjIwoKCgoKCgoKCgoKCgo="
-    base64 -d <<< $ufo
+		base64 -d <<< $ufo
         sleep 4
 }
 
 function deniedtical(){
         acde="CgoKCgoKCgoKCgoKCgkJCSMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIwoJCQkjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKCQkJIyMjCUFDQ0VTUyBERU5JRUQJQUNDRVNTIERFTklFRAlBQ0NFU1MgREVOSUVECSAjIyMKCQkJIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjCgkJCSMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIwoKCgoKCgoKCgoKCgoKCgoKCgoK"
         acde=$(base64 -d <<< $acde)
-        i=1
         tput setaf 1
         clear
         tput cup 10 0
-        while [[ $i -lt 5 ]] 
+        for i in {1..5}
                 do
                         echo "$acde"
-                        i=$(($i + 1))
-                        sleep 1
+						sleep 1
                         clear
                         tput cup 10 0
                         sleep .7
@@ -92,7 +89,7 @@ function grantical(){
         tput setaf 2
 }
 
-function readdowntical(){
+function downtical(){
         tput cup 0 0
         read row col <<< $(stty size)
         nol=$(cat $log | wc -l)
@@ -112,52 +109,51 @@ function readdowntical(){
 
 function searchtical(){
         clear
-        read row col <<< $(stty size)
-        row=$(($row - 3))
-        # choose random color
-        tput setaf $(shuf -i 0-9 -n 1)
+        row=$(stty size | awk '{print $1}')
         nol=$(cat $log | wc -l)
-        # choose a random line from $log
+		# choose a random line from $log
         # on MacOS I had a problem of using a variable inside the shuf command
         # where it normally worked on RHEL.  Lame.  
         # So I use printf to dump it in.  Seems to work really well to my surprise.
         shuffle=$(printf "shuf -i 1-%d -n 1" $nol )
         string=$(sed -n $($shuffle)p $log)
-        # from that random line, grab the last word with any characters
-        # and grep $log and display the result
-        # Also found an issue that the script stops if the grep command somehow gets 
-        # into a blank character.  So I'm just checking it if it exists, and running
-        # another function just to keep things going.  Not heavily tested.
-        if [[ $string ]]
-                then
-                        grep ${string##* } $log
-                else
-                        grantical
-        fi
-        sleep 3
-        tput setaf 2
+		noe=$(grep -i "${$string##* }" $log | wc -l)
+        center=$(($row-$noe))
+		center=$((center / 2))
+        if [[ $center -lt 1 ]]
+			then
+				clear
+			else
+				clear
+				tput setaf $(shuf -i 0-9 -n 1)
+				tput cup ${center} 0
+				grep -i "${$string##* }" $log
+				sleep 3
+		fi		
+        normalize
 }
 
 function hextical(){
         tput cup 0 0
-        for file in $(find ${HOME} -maxdepth 1 -type f | sort -R)
-                do
-                        head -c 4096 $file | hexdump -C
-                        sleep $sec
+		for i in {1..7}
+				do
+					head -c 200 $(shuf -e $(find ${HOME} -maxdepth 1 -type f) -n 1) | hexdump -C
+					sleep $sec
         done
 }
 
 function statical(){
-        for file in $(find ${HOME} -maxdepth 1 -type f)
-                do
+		clear
+		for i in {1..9}
+			do
                         clear
                         tput cup 10 0
-                        stat $file
+                        stat $(shuf -e $(find ${HOME} -maxdepth 1 -type f) -n 1)
                         sleep $sec
         done
 }
 
-function readuptical(){
+function readtical(){
         read row col <<< $(stty size)
         row=$(($row - 3 ))
         nol=$(cat $log | wc -l)
@@ -186,31 +182,124 @@ function loadtical(){
         # this will determine the halfway point across the screen
         # as the loading bar will only go to the middle of the screen
         half=$(($col / 2))
-        clear
+		third=$(($col / 3))
+		i=5
+		clear
         tput cup 9 0
-        printf "%30s\n" "Loading..."
-        i=0
-        while [[ $i -lt $half ]]
-                do
-                        printf "#"
-                        tput cup 10 $i
-                        sleep .1
-                        i=$(($i + 1))
+        printf " |---           Loading..."
+		tput cup 9 $(($half-4))
+		printf -- '---|\n'
+		while [[ $i -lt $half ]]
+			do
+				printf "#"
+				tput cup 10 $i
+				sleep $sec
+				i=$(($i + 1))
         done
+		tput cup 9 20
+		printf "Loading Complete\n\n\n"
+		sleep 1
 }
+
+
+function toptical (){
+	clear
+	for i in {1..10}
+		do
+			tput cup 10 0
+			top -b -n1 | head -n 15
+			sleep $sec
+	done
+	
+}
+
+
+function memtical(){
+	i=1
+	read row col <<< $(stty size)
+	until [[ $i -eq $row ]]
+		do
+			free -m | grep -i mem | cut -c 16-
+			i=$(($i+1))
+	done
+}
+
+function ifconfigtical () {
+	i=1
+	read row col <<< $(stty size)
+	myip=$(ifconfig | grep -i "inet" | awk 'NR=1 {print $2}')
+	clear
+	until [[ $i -eq 100 ]]
+		do
+			tput cup $(shuf -i 1-${row} -n 1) $(shuf -i 1-${col} -n 1)
+			echo $myip
+			i=$(($i+1))
+	done
+}
+
+
+function randwordtical (){
+	i=1
+	read row col <<< $(stty size)
+	nol=$(cat $log | wc -l)
+	# choose a random line from $log
+	string=$(sed -n $(shuf -i 1-${nol} -n 1)p $log)
+	# from that random line, grab the last word in that line
+	# and grep all lines from $log
+	noe=$(grep ${string##* } $log | wc -l)
+	clear
+	until [[ $i -eq 150 ]]
+		do
+			tput setaf $(shuf -i 0-9 -n 1) 
+			tput cup $(shuf -i 1-${row} -n 1) $(shuf -i 1-${col} -n 1)
+			echo ${string##* }
+			i=$(($i+1))
+	done
+	normalize
+}
+
+
 
 
 ### do stuff and things ###
 
+normalize
+
 # creates a list of all of the functions above so that we can execute them 
 # without statically calling them
-
 functical=$(declare -F | awk '{print $3}')
 
-while true
-        do
+if [[ $1 =~ "h" ]] 
+	then
+		PS3="Choose a function to run: "
+		sec=.1
+		clear
+		select function in $functical
+			do
+				if [[ $function = "_exit" ]]
+					then
+						exit 0
+				fi
+				$function
+		done
+	else
+		while true
+			do
+				if [[ $1 =~ [0-9] ]]
+					then
+						sec=$1
+				elif [[ ! $1 ]]
+					then 
+						sec=.3
+				else
+					echo "Dummy..."
+					exit 0
+				fi
                 # we take all of the functions and shuffle them so
                 # that the output is random
-                stuffandthings=$(shuf -e $functical)
-                $stuffandthings
-done
+				work=$(shuf -n 1 -e $functical)
+                trap '$work; unset work' DEBUG
+				trap 'echo "\"${work}\" command failed with exit code $?."' EXIT
+		done
+fi
+
