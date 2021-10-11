@@ -258,7 +258,9 @@ function randwordtical (){
 	normalize
 }
 
-
+function _exit() {
+	exit 0
+}
 
 
 ### do stuff and things ###
@@ -269,7 +271,7 @@ normalize
 # without statically calling them
 functical=$(declare -F | awk '{print $3}')
 
-if [[ $1 =~ "h" ]] 
+if [[ $1 =~ "help" ]] 
 	then
 		PS3="Choose a function to run: "
 		sec=.1
