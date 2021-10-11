@@ -278,10 +278,6 @@ if [[ $1 =~ "help" ]]
 		clear
 		select function in $functical
 			do
-				if [[ $function = "_exit" ]]
-					then
-						exit 0
-				fi
 				$function
 		done
 	else
