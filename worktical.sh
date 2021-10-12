@@ -259,7 +259,7 @@ function randwordtical (){
 }
 
 function _exit() {
-	exit 0
+	echo "bye Felicia..."
 }
 
 
@@ -278,6 +278,10 @@ if [[ $1 =~ "help" ]]
 		clear
 		select function in $functical
 			do
+				if [[ $function == "_exit" ]]
+					then
+						exit 0
+				fi
 				$function
 		done
 	else
