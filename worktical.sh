@@ -300,7 +300,7 @@ if [[ $1 =~ "help" ]]
                 # we take all of the functions and shuffle them so
                 # that the output is random
 				work=$(shuf -n 1 -e $functical)
-                trap '$work; unset work' DEBUG
+                		trap '$work; unset work' DEBUG
 				trap 'echo "\"${work}\" command failed with exit code $?."' EXIT
 		done
 fi
