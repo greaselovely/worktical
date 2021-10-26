@@ -117,9 +117,9 @@ function searchtical(){
         # So I use printf to dump it in.  Seems to work really well to my surprise.
         shuffle=$(printf "shuf -i 1-%d -n 1" $nol )
         string=$(sed -n $($shuffle)p $log)
-		noe=$(grep -i "${$string##* }" $log | wc -l)
+	noe=$(grep -i "${$string##* }" $log | wc -l)
         center=$(($row-$noe))
-		center=$((center / 2))
+	center=$((center / 2))
         if [[ $center -lt 1 ]]
 			then
 				clear
@@ -182,9 +182,9 @@ function loadtical(){
         # this will determine the halfway point across the screen
         # as the loading bar will only go to the middle of the screen
         half=$(($col / 2))
-		third=$(($col / 3))
-		i=5
-		clear
+	third=$(($col / 3))
+	i=5
+	clear
         tput cup 9 0
         printf " |---           Loading..."
 		tput cup 9 $(($half-4))
