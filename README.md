@@ -1,7 +1,7 @@
 # worktical
 
- this is a script inspired by hollywood.
-https://github.com/dustinkirkland/hollywood
+this is a script inspired by hollywood.
+<a href=https://github.com/dustinkirkland/hollywood>Hollywood</a>
 I wrote this to be a bit more simplified 
 and more specifically can be used in a closed
 environment using native tools or tools
