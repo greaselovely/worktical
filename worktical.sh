@@ -21,10 +21,9 @@
 # if not specified, it defaults to .3 seconds.  try worktical.sh .1 for fast, worktical.sh 3 for super slow.
 # to run a specific function, use worktical.sh help, or --h, or -h, or shirt (we're just looking for 'h')
 
-# this is a typical log file that we'll use
-# change it or copy something into this location for it to run.
-# longer the file the better the random behavior of the script.
-# sometimes this is a log file permissions problem which is why you may need to find something to put here.
+# we do a find on all files in /var/log, create an array of those log files for reference
+# in the $log variable in the while loop which uses shuf to randomly select a file
+# to use for the function being called.  
 
 logFiles=()
 
