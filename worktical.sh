@@ -16,8 +16,6 @@
 # to do
 # incorporate tmux like hollywood.  I dig that.
 # set term width: https://stackoverflow.com/questions/5243445/bash-command-to-change-size-of-bash-window
-# just use a lame local fake log file : https://www.thegeekstuff.com/2011/08/linux-var-log-files/
-# also do a list of log files, determine which is readable ie...(if [ -r filename ] )
 
 # can be run with $1 being specific to change the sleep timer within the script
 # if not specified, it defaults to .3 seconds.  try worktical.sh .1 for fast, worktical.sh 3 for super slow.
