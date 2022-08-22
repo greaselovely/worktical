@@ -183,27 +183,27 @@ function readtical(){
 }
 
 function loadtical(){
-        read row col <<< $(stty size)
-        # this will determine the halfway point across the screen
-        # as the loading bar will only go to the middle of the screen
-        half=$(($col / 2))
+	read row col <<< $(stty size)
+	# this will determine the halfway point across the screen
+	# as the loading bar will only go to the middle of the screen
+	half=$(($col / 2))
 	third=$(($col / 3))
-	i=5
+	i=1
 	clear
-        tput cup 9 0
-        printf " |---           Loading..."
-		tput cup 9 $(($half-4))
-		printf -- '---|\n'
-		while [[ $i -lt $half ]]
-			do
-				printf "#"
-				tput cup 10 $i
-				sleep $sec
-				i=$(($i + 1))
-        done
-		tput cup 9 20
-		printf "Loading Complete\n\n\n"
-		sleep 1
+	tput cup 9 0
+	printf " |---           Loading..."
+	tput cup 9 $(($half-4))
+	printf -- '---|\n'
+	while [[ $i -lt $half ]]
+		do
+			tput cup 10 $i
+			printf "#"
+			sleep $sec
+			i=$(($i + 1))
+	done
+	tput cup 9 16
+	printf "Loading Complete\n\n\n"
+	sleep 1
 }
 
 
