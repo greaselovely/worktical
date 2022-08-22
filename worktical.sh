@@ -28,7 +28,12 @@
 # longer the file the better the random behavior of the script.
 # sometimes this is a log file permissions problem which is why you may need to find something to put here.
 
-log=/var/log/dmesg
+logFiles=()
+
+for file in $(find /var/log -type f -perm 644 -print 2>/dev/null)
+do
+	logFiles=(${logFiles[@]} "$file")
+done
 
 
 function normalize () {
@@ -299,6 +304,7 @@ if [[ $1 =~ "help" ]]
 				fi
                 # we take all of the functions and shuffle them so
                 # that the output is random
+				log=$(shuf -n 1 -e $logFiles)
 				work=$(shuf -n 1 -e $functical)
                 		trap '$work; unset work' DEBUG
 				trap 'echo "\"${work}\" command failed with exit code $?."' EXIT
