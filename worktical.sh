@@ -269,8 +269,8 @@ function _exit() {
 
 normalize
 
-# creates a list of all of the functions above so that we can execute them 
-# without statically calling them
+# creates an array of all of the functions above so that we can execute them 
+# without statically calling them and if you create new one's, then you're golden
 functical=$(declare -F | awk '{print $3}')
 
 if [[ $1 =~ "help" ]] 
