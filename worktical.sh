@@ -303,7 +303,7 @@ if [[ $1 =~ "help" ]]
                 # that the output is random
 				log=$(shuf -n 1 -e $logFiles)
 				work=$(shuf -n 1 -e $functical)
-                		trap '$work; unset work' DEBUG
+				trap '$work; unset work' DEBUG
 				trap 'echo "\"${work}\" command failed with exit code $?."' EXIT
 		done
 fi
