@@ -19,7 +19,7 @@
 
 # can be run with $1 being specific to change the sleep timer within the script
 # if not specified, it defaults to .3 seconds.  try worktical.sh .1 for fast, worktical.sh 3 for super slow.
-# to run a specific function, use worktical.sh help, or --h, or -h, or shirt (we're just looking for 'h')
+# to run a specific function, use worktical.sh --help.
 
 # we do a find on all files in /var/log, create an array of those log files for reference
 # in the $log variable in the while loop which uses shuf to randomly select a file
