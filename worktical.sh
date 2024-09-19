@@ -180,7 +180,11 @@ main() {
 
     while true; do
         clear_screen
-        eval "${functions[$RANDOM % ${#functions[@]}]}"
+        func="${functions[$RANDOM % ${#functions[@]}]}"
+        echo "Executing: $func" >&2  # Debug output
+        eval "$func"
+        echo "Function completed. Sleeping for 2 seconds..." >&2  # Debug output
+        sleep 2
     done
 }
 
