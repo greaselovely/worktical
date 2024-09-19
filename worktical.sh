@@ -5,7 +5,6 @@ set -euo pipefail
 # Configuration
 DEFAULT_SLEEP=0.3
 MAX_LINES=100
-LOGFILE_PERMISSIONS=644
 
 # Color definitions
 declare -A colors=(
@@ -72,16 +71,16 @@ eyetical() {
     sleep "$delay"
 }
 
-# Function to find random accessible log files
-find_random_log() {
-    find /var/log -type f -perm +444 2>/dev/null | shuf -n 1
+# Function to find random readable text files
+find_random_readable_file() {
+    find "$HOME" -type f -readable -size +1c \( -name "*.txt" -o -name "*.log" -o -name "*.md" -o -name "*.csv" \) 2>/dev/null | shuf -n 1
 }
 
 # Function to display scrolling text
 scrolltical() {
-    local file=$(find_random_log)
+    local file=$(find_random_readable_file)
     if [[ -z "$file" ]]; then
-        print_color "YELLOW" "No accessible log file found."
+        print_color "YELLOW" "No suitable readable file found."
         return
     fi
     local lines=$MAX_LINES
@@ -98,14 +97,22 @@ scrolltical() {
 
 # Function to display hex dump
 hextical() {
-    local file=$(find "$HOME" -maxdepth 1 -type f | shuf -n 1)
+    local file=$(find_random_readable_file)
+    if [[ -z "$file" ]]; then
+        print_color "YELLOW" "No suitable readable file found."
+        return
+    fi
     head -c 200 "$file" | hexdump -C
     sleep "$SLEEP_TIME"
 }
 
 # Function to display file stats
 statical() {
-    local file=$(find "$HOME" -maxdepth 1 -type f | shuf -n 1)
+    local file=$(find_random_readable_file)
+    if [[ -z "$file" ]]; then
+        print_color "YELLOW" "No suitable readable file found."
+        return
+    fi
     stat "$file"
     sleep "$SLEEP_TIME"
 }
