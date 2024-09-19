@@ -182,9 +182,9 @@ loadtical() {
     local width=$((COLUMNS / 2))
     move_cursor 9 0
     printf " |---           Loading..."
-    move_cursor 9 $((width - 4))
+    move_cursor 9 $((width-4))
     printf -- '---|\n'
-    for ((i=1; i<=width; i++)); do
+    for ((i=1; i<width; i++)); do  # Changed from i<=width to i<width
         move_cursor 10 $i
         printf "#"
         sleep "$SLEEP_TIME"
