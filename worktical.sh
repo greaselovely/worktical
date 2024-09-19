@@ -289,7 +289,6 @@ main() {
         if ! eval "$func"; then
             print_color "RED" "Function $func failed. Continuing..."
         fi
-        print_color "GREEN" "Function completed. Sleeping for 2 seconds..."
         sleep 2
     done
 }
