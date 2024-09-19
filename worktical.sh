@@ -1,310 +1,171 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# this is a script inspired by hollywood.
+set -euo pipefail
+
+# Improved script inspired by hollywood
 # https://github.com/dustinkirkland/hollywood
-# I wrote this to be a bit more simplified 
-# and more specifically can be used in a closed
-# environment using native tools or tools
-# that are installed as core OS utilities
 
-# ascii images are base64 encoded to keep them intact and decoded 
-# at runtime so that they appear as expected.
-# also did it for 'reasonable obfuscation' as to not ruin the surprise ¯\_(ツ)_/¯
-# as long as the base64 string is one line with no CR / LF 
-# it will work as expected  
+# Configuration
+DEFAULT_SLEEP=0.3
+MAX_LINES=100
+LOGFILE_PERMISSIONS=644
 
-# to do
-# incorporate tmux like hollywood.  I dig that.
-# set term width: https://stackoverflow.com/questions/5243445/bash-command-to-change-size-of-bash-window
+# Color definitions
+declare -A colors=(
+    [RED]='\033[0;31m'
+    [GREEN]='\033[0;32m'
+    [YELLOW]='\033[0;33m'
+    [BLUE]='\033[0;34m'
+    [MAGENTA]='\033[0;35m'
+    [CYAN]='\033[0;36m'
+    [WHITE]='\033[0;37m'
+    [NC]='\033[0m' # No Color
+)
 
-# can be run with $1 being specific to change the sleep timer within the script
-# if not specified, it defaults to .3 seconds.  try worktical.sh .1 for fast, worktical.sh 3 for super slow.
-# to run a specific function, use worktical.sh --help.
-
-# we do a find on all files in /var/log, create an array of those log files for reference
-# in the $log variable in the while loop which uses shuf to randomly select a file
-# to use for the function being called.  
-
-logFiles=()
-
-for file in $(find /var/log -type f -perm 644 -print 2>/dev/null)
-do
-	logFiles=(${logFiles[@]} "$file")
-done
-
-
-function normalize () {
-	# console to green
-	tput setaf 2
-	# hide cursor
-	tput civis
+# Function to print colored output
+print_color() {
+    local color_name=$1
+    shift
+    echo -e "${colors[$color_name]}$*${colors[NC]}"
 }
 
-
-function eyetical(){
-        clear
-        eye="CgoKCgoKCgoKCgogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIC4uLCw7Ozs7OzssLCwsCiAgICAgICAgICAgICAgICAgICAgICAgICAgLiw7Jyc7OywuLiw7OzssLCwsLC4nJyc7OywuLgogICAgICAgICAgICAgICAgICAgICAgICwsJycgICAgICAgICAgICAgICAgICAgICcnOzs7Oyw7JycKICAgICAgICAgICAgICAgICAgICAgIDsnICAgICw7QEA7JyAgLEBAOywgQEAsICc7OztAQDssOyc7LgogICAgICAgICAgICAgICAgICAgICAnJyAgLDtAQEBAQCcgIDtAQEBAOyAnJyAgICA7O0BAQEBAOzs7OwogICAgICAgICAgICAgICAgICAgICAgICA7O0BAQEBAOyAgICAnJycgICAgIC4sLDs7O0BAQEBAQEA7OzsKICAgICAgICAgICAgICAgICAgICAgICA7O0BAQEBAQDsgICAgICAgICAgICwgJzs7O0BAQEBAQEBAOzs7LgogICAgICAgICAgICAgICAgICAgICAgICAnJztAQEBAQCwuICAsICAgLiAgICcsOzs7QEBAQEBAOzs7Ozs7CiAgICAgICAgICAgICAgICAgICAgICAgICAgIC4gICAnJzs7Ozs7Ozs7Oyw7Ozs7QEBAQEA7OycgLC46OycKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAnJy4uLCwgICAgICcnJycgICAgJyAgLiw7JwogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgJycnJycnOjonJycnJycnJwoK"
-        base64 -d <<< $eye
-        sleep 2
+# Function to hide cursor
+hide_cursor() {
+    tput civis
 }
 
-function alientical(){
-        clear
-        alien="CgoKCgoKCgoKCgogICAgCQkJCQkgICAgICAjIyAgICAgICAgICAjIwogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAjIyAgICAgICMjICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICMjIyMjIyMjIyMjIyMjCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIyMjIyAgIyMjIyMjICAjIyMjCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIyMgICMjIyMjIyMjIyMjIyMjICAjIyAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIyMgICMjICAgICAgICAgICMjICAjIwogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAjIyMjICAjIyMjCgoKCgoKCgoKCgoK"
-        base64 -d <<< $alien
-        sleep 2
+# Function to show cursor
+show_cursor() {
+    tput cnorm
 }
 
-function ufotical(){
-        clear
-    ufo="CgoKCgoKCgoKCgogCQkJICAgICAgICAgICAgICAgICAgICAgIyMjIyMjIyMjIyMjCiAgICAgICAgICAgICAgCQkJCSAjIyMjIyMjIyMjIyMjIyMjIyMjIyAKICAgICAgICAgCQkJICAgICAgICMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIwoJCQkgICAgICAgICAgICAgIyMjIyAgIyMjIyAgIyMjIyAgIyMjIyAgIyMjIwoJCQkgICAgICAgICAgICMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIAoJCQkgICAgICAgICAgICAgICAjIyMjIyMgICAgIyMjIyAgICAjIyMjIyMKCQkJICAgICAgICAgICAgICAgICAjIyAgICAgICAgICAgICAgICAjIwoKCgoKCgoKCgoKCgo="
-		base64 -d <<< $ufo
-        sleep 4
+# Function to clear screen
+clear_screen() {
+    tput clear
 }
 
-function deniedtical(){
-        acde="CgoKCgoKCgoKCgoKCgkJCSMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIwoJCQkjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKCQkJIyMjCUFDQ0VTUyBERU5JRUQJQUNDRVNTIERFTklFRAlBQ0NFU1MgREVOSUVECSAjIyMKCQkJIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjCgkJCSMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIwoKCgoKCgoKCgoKCgoKCgoKCgoK"
-        acde=$(base64 -d <<< $acde)
-        tput setaf 1
-        clear
-        tput cup 10 0
-        for i in {1..5}
-                do
-                        echo "$acde"
-						sleep 1
-                        clear
-                        tput cup 10 0
-                        sleep .7
-        done
-        tput setaf 2
-
+# Function to move cursor
+move_cursor() {
+    tput cup $1 $2
 }
 
-function grantical(){
-        pegr="CgoKCgoKCgoKCgoKCgkJCSMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIwoJCQkjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKCQkJIyMjCVBFUk1JU1NJT04gR1JBTlRFRCAtIFFVRVJZIFJVTk5JTkcgLSBTVEFOREJZCSAjIyMKCQkJIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjCgkJCSMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIwoKCgoKCgoKCgoKCgoKCgoKCgoK"
-        pegr=$(base64 -d <<< $pegr)
-        tput setaf 7
-        clear
-        tput cup 10 0
-        echo "$pegr"
-        sleep 5
-        tput setaf 2
+# Function to get terminal dimensions
+get_terminal_size() {
+    read -r LINES COLUMNS < <(stty size)
 }
 
-function downtical(){
-        tput cup 0 0
-        read row col <<< $(stty size)
-        nol=$(cat $log | wc -l)
-        startat=$(printf "shuf -i 1-%d -n 1" ${nol})
-        startat=$($startat)
-        endat=$(($startat + $row))
-        readlog=$(sed -n -e ${startat},${endat}p ${log})
-        IFS=$'\n'
-        for line in $readlog
-                do
-                        echo "$line"
-                        sleep $sec
-        done
-        unset IFS
+# Function to decode base64 ASCII art
+decode_ascii_art() {
+    echo "$1" | tr -d '[:space:]' | base64 -d
 }
 
+# ASCII art (base64 encoded, all on one line with no spaces)
+EYE_ART="CgoKCgoKCgoKCgogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIC4uLCw7Ozs7OzssLCwsCiAgICAgICAgICAgICAgICAgICAgICAgICAgLiw7Jyc7OywuLiw7OzssLCwsLC4nJyc7OywuLgogICAgICAgICAgICAgICAgICAgICAgICwsJycgICAgICAgICAgICAgICAgICAgICcnOzs7Oyw7JycKICAgICAgICAgICAgICAgICAgICAgIDsnICAgICw7QEA7JyAgLEBAOywgQEAsICc7OztAQDssOyc7LgogICAgICAgICAgICAgICAgICAgICAnJyAgLDtAQEBAQCcgIDtAQEBAOyAnJyAgICA7O0BAQEBAOzs7OwogICAgICAgICAgICAgICAgICAgICAgICA7O0BAQEBAOyAgICAnJycgICAgIC4sLDs7O0BAQEBAQEA7OzsKICAgICAgICAgICAgICAgICAgICAgICA7O0BAQEBAQDsgICAgICAgICAgICwgJzs7O0BAQEBAQEBAOzs7LgogICAgICAgICAgICAgICAgICAgICAgICAnJztAQEBAQCwuICAsICAgLiAgICcsOzs7QEBAQEBAOzs7Ozs7CiAgICAgICAgICAgICAgICAgICAgICAgICAgIC4gICAnJzs7Ozs7Ozs7Oyw7Ozs7QEBAQEA7OycgLC46OycKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAnJy4uLCwgICAgICcnJycgICAgJyAgLiw7JwogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgJycnJycnOjonJycnJycnJwoK"
 
-function searchtical(){
-        clear
-        row=$(stty size | awk '{print $1}')
-        nol=$(cat $log | wc -l)
-		# choose a random line from $log
-        # on MacOS I had a problem of using a variable inside the shuf command
-        # where it normally worked on RHEL.  Lame.  
-        # So I use printf to dump it in.  Seems to work really well to my surprise.
-        shuffle=$(printf "shuf -i 1-%d -n 1" $nol )
-        string=$(sed -n $($shuffle)p $log)
-	noe=$(grep -i "${$string##* }" $log | wc -l)
-        center=$(($row-$noe))
-	center=$((center / 2))
-        if [[ $center -lt 1 ]]
-			then
-				clear
-			else
-				clear
-				tput setaf $(shuf -i 0-9 -n 1)
-				tput cup ${center} 0
-				grep -i "${$string##* }" $log
-				sleep 3
-		fi		
-        normalize
+ALIEN_ART="CgoKCgoKCgoKCgogICAgCQkJCQkgICAgICAjIyAgICAgICAgICAjIwogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAjIyAgICAgICMjICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICMjIyMjIyMjIyMjIyMjCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIyMjIyAgIyMjIyMjICAjIyMjCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIyMgICMjIyMjIyMjIyMjIyMjICAjIyAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIyMgICMjICAgICAgICAgICMjICAjIwogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAjIyMjICAjIyMjCgoKCgoKCgoKCgoK"
+
+UFO_ART="CgoKCgoKCgoKCgogCQkJICAgICAgICAgICAgICAgICAgICAgIyMjIyMjIyMjIyMjCiAgICAgICAgICAgICAgCQkJCSAjIyMjIyMjIyMjIyMjIyMjIyMjIyAKICAgICAgICAgCQkJICAgICAgICMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIwoJCQkgICAgICAgICAgICAgIyMjIyAgIyMjIyAgIyMjIyAgIyMjIyAgIyMjIwoJCQkgICAgICAgICAgICMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIAoJCQkgICAgICAgICAgICAgICAjIyMjIyMgICAgIyMjIyAgICAjIyMjIyMKCQkJICAgICAgICAgICAgICAgICAjIyAgICAgICAgICAgICAgICAjIwoKCgoKCgoKCgoKCgo="
+
+# Function to display ASCII art
+display_ascii_art() {
+    local art=$1
+    local delay=${2:-2}
+    clear_screen
+    decode_ascii_art "$art"
+    sleep "$delay"
 }
 
-function hextical(){
-        tput cup 0 0
-		for i in {1..7}
-				do
-					head -c 200 $(shuf -e $(find ${HOME} -maxdepth 1 -type f) -n 1) | hexdump -C
-					sleep $sec
-        done
+# Function to display scrolling text
+scroll_text() {
+    local file=$1
+    local lines=${2:-$MAX_LINES}
+    local start_line=$(shuf -i 1-"$(wc -l < "$file")" -n 1)
+    sed -n "${start_line},+${lines}p" "$file" | while IFS= read -r line; do
+        echo "$line"
+        sleep "$SLEEP_TIME"
+    done
 }
 
-function statical(){
-		clear
-		for i in {1..9}
-			do
-                        clear
-                        tput cup 10 0
-                        stat $(shuf -e $(find ${HOME} -maxdepth 1 -type f) -n 1)
-                        sleep $sec
-        done
+# Function to display hex dump
+hex_dump() {
+    local file=$(find "$HOME" -maxdepth 1 -type f | shuf -n 1)
+    head -c 200 "$file" | hexdump -C
+    sleep "$SLEEP_TIME"
 }
 
-function readtical(){
-        read row col <<< $(stty size)
-        row=$(($row - 3 ))
-        nol=$(cat $log | wc -l)
-        startat=$(printf "shuf -i 1-%d -n 1" $nol)
-        startat=$($startat)
-        endat=$(($startat + $row))
-        shuffle=$(printf "sed -n -e %d,%d" ${startat} ${endat})
-        readlog=$(${shuffle}p ${log})
-        IFS=$'\n'
-        clear
-        for line in $readlog
-                do
-                        tput cup $row 0
-                        echo "$line"
-                        sleep $sec
-                        row=$(($row - 1))
-                        # this can be annoying or cool, uncomment if you want random colors per line
-                        #tput setaf $(shuf -i 0-9 -n 1)
-        done
-        unset IFS
-
+# Function to display file stats
+display_stats() {
+    local file=$(find "$HOME" -maxdepth 1 -type f | shuf -n 1)
+    stat "$file"
+    sleep "$SLEEP_TIME"
 }
 
-function loadtical(){
-	read row col <<< $(stty size)
-	# this will determine the halfway point across the screen
-	# as the loading bar will only go to the middle of the screen
-	half=$(($col / 2))
-	third=$(($col / 3))
-	i=1
-	clear
-	tput cup 9 0
-	printf " |---           Loading..."
-	tput cup 9 $(($half-4))
-	printf -- '---|\n'
-	while [[ $i -lt $half ]]
-		do
-			tput cup 10 $i
-			printf "#"
-			sleep $sec
-			i=$(($i + 1))
-	done
-	tput cup 9 16
-	printf "Loading Complete\n\n\n"
-	sleep 1
+# Function to display loading bar
+display_loading_bar() {
+    local width=$((COLUMNS / 2))
+    move_cursor 9 0
+    printf " |---           Loading..."
+    move_cursor 9 $((width - 4))
+    printf -- '---|\n'
+    for ((i=1; i<=width; i++)); do
+        move_cursor 10 $i
+        printf "#"
+        sleep "$SLEEP_TIME"
+    done
+    move_cursor 9 16
+    printf "Loading Complete\n\n\n"
+    sleep 1
 }
 
-
-function toptical (){
-	clear
-	for i in {1..10}
-		do
-			tput cup 10 0
-			top -b -n1 | head -n 15
-			sleep $sec
-	done
-	
+# Function to display top processes
+display_top() {
+    top -b -n1 | head -n 15
+    sleep "$SLEEP_TIME"
 }
 
-
-function memtical(){
-	i=1
-	read row col <<< $(stty size)
-	until [[ $i -eq $row ]]
-		do
-			free -m | grep -i mem | cut -c 16-
-			i=$(($i+1))
-	done
+# Function to display memory info
+display_memory() {
+    for ((i=1; i<=LINES; i++)); do
+        free -m | awk '/Mem:/ {printf "Memory: %d/%d MB (%.2f%%)\n", $3, $2, $3/$2 * 100}'
+    done
 }
 
-function ifconfigtical () {
-	i=1
-	read row col <<< $(stty size)
-	myip=$(ifconfig | grep -i "inet" | awk 'NR=1 {print $2}')
-	clear
-	until [[ $i -eq 100 ]]
-		do
-			tput cup $(shuf -i 1-${row} -n 1) $(shuf -i 1-${col} -n 1)
-			echo $myip
-			i=$(($i+1))
-	done
+# Function to display IP addresses
+display_ip_addresses() {
+    local ips=($(hostname -I))
+    for ((i=1; i<=100; i++)); do
+        move_cursor $(shuf -i 1-"$LINES" -n 1) $(shuf -i 1-"$COLUMNS" -n 1)
+        echo "${ips[RANDOM % ${#ips[@]}]}"
+    done
 }
 
+# Main function to run the script
+main() {
+    trap show_cursor EXIT
+    hide_cursor
+    get_terminal_size
 
-function randwordtical (){
-	i=1
-	read row col <<< $(stty size)
-	nol=$(cat $log | wc -l)
-	# choose a random line from $log
-	string=$(sed -n $(shuf -i 1-${nol} -n 1)p $log)
-	# from that random line, grab the last word in that line
-	# and grep all lines from $log
-	noe=$(grep ${string##* } $log | wc -l)
-	clear
-	until [[ $i -eq 150 ]]
-		do
-			tput setaf $(shuf -i 0-9 -n 1) 
-			tput cup $(shuf -i 1-${row} -n 1) $(shuf -i 1-${col} -n 1)
-			echo ${string##* }
-			i=$(($i+1))
-	done
-	normalize
+    SLEEP_TIME=${1:-$DEFAULT_SLEEP}
+
+    # Array of all available functions
+    functions=(
+        "display_ascii_art '$EYE_ART'"
+        "display_ascii_art '$ALIEN_ART'"
+        "display_ascii_art '$UFO_ART'"
+        "scroll_text /var/log/syslog"
+        "hex_dump"
+        "display_stats"
+        "display_loading_bar"
+        "display_top"
+        "display_memory"
+        "display_ip_addresses"
+    )
+
+    while true; do
+        clear_screen
+        eval "${functions[RANDOM % ${#functions[@]}]}"
+    done
 }
 
-function _exit() {
-	echo "bye Felicia..."
-}
-
-
-### do stuff and things ###
-
-normalize
-
-# creates an array of all of the functions above so that we can execute them 
-# without statically calling them and if you create new one's, then you're golden
-functical=$(declare -F | awk '{print $3}')
-
-if [[ $1 =~ "help" ]] 
-	then
-		PS3="Choose a function to run: "
-		sec=.1
-		clear
-		select function in $functical
-			do
-				if [[ $function == "_exit" ]]
-					then
-						exit 0
-				fi
-				$function
-		done
-	else
-		while true
-			do
-				if [[ $1 =~ [0-9] ]]
-					then
-						sec=$1
-				elif [[ ! $1 ]]
-					then 
-						sec=.3
-				else
-					echo "Dummy..."
-					exit 0
-				fi
-                # we take all of the functions and shuffle them so
-                # that the output is random
-				log=$(shuf -n 1 -e $logFiles)
-				work=$(shuf -n 1 -e $functical)
-				trap '$work; unset work' DEBUG
-				trap 'echo "\"${work}\" command failed with exit code $?."' EXIT
-		done
-fi
-
+# Run the script
+main "$@"
