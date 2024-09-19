@@ -131,7 +131,7 @@ packetical() {
 
 
 snowtical() {
-    local characters=(' ' '.' ':' '=' '+' '*' '#' '%' '@')
+    local characters=(' ' '.' ':' '=' '+' '*' '#' '_' '-' '`' ',')
     local duration=10  # Duration in seconds
 
     clear_screen
