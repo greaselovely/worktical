@@ -156,6 +156,39 @@ iptical() {
     sleep "$SLEEP_TIME"
 }
 
+# New function to simulate network traffic
+nettical() {
+    local width=$COLUMNS
+    local height=$((LINES - 5))
+    local nodes=("○" "◇" "□" "△" "▽" "☆" "◎" "◉")
+    local connections=("-" "=" "~" "־" "‥" "…")
+    
+    clear_screen
+    print_color "CYAN" "Network Traffic Simulation"
+    
+    for ((i=0; i<height; i++)); do
+        local line=""
+        for ((j=0; j<width; j++)); do
+            if ((RANDOM % 10 == 0)); then
+                line+="${nodes[RANDOM % ${#nodes[@]}]}"
+            elif ((RANDOM % 5 == 0)); then
+                line+="${connections[RANDOM % ${#connections[@]}]}"
+            else
+                line+=" "
+            fi
+        done
+        echo "$line"
+        sleep 0.1
+    done
+    
+    sleep "$SLEEP_TIME"
+}
+
+# Function to get all "tical" functions
+get_tical_functions() {
+    declare -F | awk '{print $3}' | grep 'tical$' | grep -v '^_'
+}
+
 # Main function to run the script
 main() {
     trap show_cursor EXIT
@@ -164,19 +197,16 @@ main() {
 
     SLEEP_TIME=${1:-$DEFAULT_SLEEP}
 
-    # Array of all available functions
-    functions=(
-        "eyetical \"$SURPRISE_ART_1\""
-        "eyetical \"$SURPRISE_ART_2\""
-        "eyetical \"$SURPRISE_ART_3\""
-        "scrolltical"
-        "hextical"
-        "statical"
-        "loadtical"
-        "toptical"
-        "memtical"
-        "iptical"
-    )
+    # Automatically populate the functions array
+    readarray -t functions < <(get_tical_functions)
+
+    # Special handling for eyetical function
+    eyetical_index=$(printf '%s\n' "${functions[@]}" | grep -n '^eyetical$' | cut -d: -f1)
+    if [[ -n "$eyetical_index" ]]; then
+        eyetical_index=$((eyetical_index - 1))
+        functions[$eyetical_index]="eyetical \"$SURPRISE_ART_1\""
+        functions+=("eyetical \"$SURPRISE_ART_2\"" "eyetical \"$SURPRISE_ART_3\"")
+    fi
 
     while true; do
         clear_screen
