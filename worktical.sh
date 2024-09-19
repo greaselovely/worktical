@@ -75,11 +75,24 @@ display_ascii_art() {
     sleep "$delay"
 }
 
+# Function to find random accessible log files
+find_random_log() {
+    find /var/log -type f -perm +444 2>/dev/null | shuf -n 1
+}
+
 # Function to display scrolling text
 scroll_text() {
-    local file=$1
-    local lines=${2:-$MAX_LINES}
-    local start_line=$(shuf -i 1-"$(wc -l < "$file")" -n 1)
+    local file=$(find_random_log)
+    if [[ -z "$file" ]]; then
+        print_color "YELLOW" "No accessible log file found."
+        return
+    fi
+    local lines=$MAX_LINES
+    local total_lines=$(wc -l < "$file")
+    if [[ $total_lines -lt $lines ]]; then
+        lines=$total_lines
+    fi
+    local start_line=$((RANDOM % (total_lines - lines + 1) + 1))
     sed -n "${start_line},+${lines}p" "$file" | while IFS= read -r line; do
         echo "$line"
         sleep "$SLEEP_TIME"
@@ -119,22 +132,22 @@ display_loading_bar() {
 
 # Function to display top processes
 display_top() {
-    top -b -n1 | head -n 15
+    top -l 1 | head -n 15
     sleep "$SLEEP_TIME"
 }
 
 # Function to display memory info
 display_memory() {
     for ((i=1; i<=LINES; i++)); do
-        free -m | awk '/Mem:/ {printf "Memory: %d/%d MB (%.2f%%)\n", $3, $2, $3/$2 * 100}'
+        vm_stat | perl -ne '/page size of (\d+)/ and $size=$1; /Pages\s+([^:]+)[^\d]+(\d+)/ and printf("%-16s % 16.2f Mi\n", "$1:", $2 * $size / 1048576);'
     done
 }
 
 # Function to display IP addresses
 display_ip_addresses() {
-    local ips=($(hostname -I))
+    local ips=($(ifconfig | grep "inet " | grep -v 127.0.0.1 | awk '{print $2}'))
     for ((i=1; i<=100; i++)); do
-        move_cursor $(shuf -i 1-"$LINES" -n 1) $(shuf -i 1-"$COLUMNS" -n 1)
+        move_cursor $(( RANDOM % LINES )) $(( RANDOM % COLUMNS ))
         echo "${ips[RANDOM % ${#ips[@]}]}"
     done
 }
@@ -152,7 +165,7 @@ main() {
         "display_ascii_art '$EYE_ART'"
         "display_ascii_art '$ALIEN_ART'"
         "display_ascii_art '$UFO_ART'"
-        "scroll_text /var/log/syslog"
+        "scroll_text"
         "hex_dump"
         "display_stats"
         "display_loading_bar"
@@ -163,7 +176,7 @@ main() {
 
     while true; do
         clear_screen
-        eval "${functions[RANDOM % ${#functions[@]}]}"
+        ${functions[RANDOM % ${#functions[@]}]}
     done
 }
 
