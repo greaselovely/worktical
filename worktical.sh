@@ -95,6 +95,31 @@ scrolltical() {
     done
 }
 
+snowtical() {
+    local characters=(' ' '.' ':' '=' '+' '*' '#' '%' '@')
+    local duration=10  # Duration in seconds
+
+    clear_screen
+    print_color "WHITE" "Old TV Static Simulation"
+    
+    hide_cursor
+    
+    local end_time=$((SECONDS + duration))
+    while [ $SECONDS -lt $end_time ]; do
+        for ((y=0; y<LINES; y++)); do
+            local line=""
+            for ((x=0; x<COLUMNS; x++)); do
+                line+="${characters[$RANDOM % ${#characters[@]}]}"
+            done
+            echo -en "\e[${y};0H$line"
+        done
+        sleep 0.1
+    done
+    
+    show_cursor
+    sleep "$SLEEP_TIME"
+}
+
 # Function to display hex dump
 hextical() {
     local file=$(find_random_readable_file)
