@@ -196,7 +196,13 @@ loadtical() {
 
 # Function to display top processes
 toptical() {
-    top -l 1 | head -n 15
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        # macOS version
+        top -l 1 -n 15 | head -n 15
+    else
+        # Linux version
+        top -b -n 1 | head -n 15
+    fi
     sleep "$SLEEP_TIME"
 }
 
