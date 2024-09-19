@@ -25,7 +25,51 @@ print_color() {
     echo -e "${colors[$color_name]}$*${colors[NC]}" >&2
 }
 
-# ... [Other utility functions remain unchanged] ...
+# Function to hide cursor
+hide_cursor() {
+    tput civis
+}
+
+# Function to show cursor
+show_cursor() {
+    tput cnorm
+}
+
+# Function to clear screen
+clear_screen() {
+    tput clear
+}
+
+# Function to move cursor
+move_cursor() {
+    tput cup $1 $2
+}
+
+# Function to get terminal dimensions
+get_terminal_size() {
+    read -r LINES COLUMNS < <(stty size)
+}
+
+# Function to decode base64 ASCII art
+decode_ascii_art() {
+    echo "$1" | base64 -d
+}
+
+# ASCII art (base64 encoded)
+SURPRISE_ART_1="CgoKCgoKCgoKCgogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIC4uLCw7Ozs7OzssLCwsCiAgICAgICAgICAgICAgICAgICAgICAgICAgLiw7Jyc7OywuLiw7OzssLCwsLC4nJyc7OywuLgogICAgICAgICAgICAgICAgICAgICAgICwsJycgICAgICAgICAgICAgICAgICAgICcnOzs7Oyw7JycKICAgICAgICAgICAgICAgICAgICAgIDsnICAgICw7QEA7JyAgLEBAOywgQEAsICc7OztAQDssOyc7LgogICAgICAgICAgICAgICAgICAgICAnJyAgLDtAQEBAQCcgIDtAQEBAOyAnJyAgICA7O0BAQEBAOzs7OwogICAgICAgICAgICAgICAgICAgICAgICA7O0BAQEBAOyAgICAnJycgICAgIC4sLDs7O0BAQEBAQEA7OzsKICAgICAgICAgICAgICAgICAgICAgICA7O0BAQEBAQDsgICAgICAgICAgICwgJzs7O0BAQEBAQEBAOzs7LgogICAgICAgICAgICAgICAgICAgICAgICAnJztAQEBAQCwuICAsICAgLiAgICcsOzs7QEBAQEBAOzs7Ozs7CiAgICAgICAgICAgICAgICAgICAgICAgICAgIC4gICAnJzs7Ozs7Ozs7Oyw7Ozs7QEBAQEA7OycgLC46OycKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAnJy4uLCwgICAgICcnJycgICAgJyAgLiw7JwogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgJycnJycnOjonJycnJycnJwoK"
+
+SURPRISE_ART_2="CgoKCgoKCgoKCgogICAgCQkJCQkgICAgICAjIyAgICAgICAgICAjIwogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAjIyAgICAgICMjICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICMjIyMjIyMjIyMjIyMjCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIyMjIyAgIyMjIyMjICAjIyMjCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIyMgICMjIyMjIyMjIyMjIyMjICAjIyAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIyMgICMjICAgICAgICAgICMjICAjIwogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAjIyMjICAjIyMjCgoKCgoKCgoKCgoK"
+
+SURPRISE_ART_3="CgoKCgoKCgoKCgogCQkJICAgICAgICAgICAgICAgICAgICAgIyMjIyMjIyMjIyMjCiAgICAgICAgICAgICAgCQkJCSAjIyMjIyMjIyMjIyMjIyMjIyMjIyAKICAgICAgICAgCQkJICAgICAgICMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIwoJCQkgICAgICAgICAgICAgIyMjIyAgIyMjIyAgIyMjIyAgIyMjIyAgIyMjIwoJCQkgICAgICAgICAgICMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIAoJCQkgICAgICAgICAgICAgICAjIyMjIyMgICAgIyMjIyAgICAjIyMjIyMKCQkJICAgICAgICAgICAgICAgICAjIyAgICAgICAgICAgICAgICAjIwoKCgoKCgoKCgoKCgo="
+
+# Function to display ASCII art
+eyetical() {
+    local art=$1
+    local delay=${2:-2}
+    clear_screen
+    decode_ascii_art "$art"
+    sleep "$delay"
+}
 
 # Function to find random readable text files
 find_random_readable_file() {
@@ -73,7 +117,44 @@ statical() {
     sleep "$SLEEP_TIME"
 }
 
-# ... [Other functions remain unchanged] ...
+# Function to display loading bar
+loadtical() {
+    local width=$((COLUMNS / 2))
+    move_cursor 9 0
+    printf " |---           Loading..."
+    move_cursor 9 $((width - 4))
+    printf -- '---|\n'
+    for ((i=1; i<=width; i++)); do
+        move_cursor 10 $i
+        printf "#"
+        sleep "$SLEEP_TIME"
+    done
+    move_cursor 9 16
+    printf "Loading Complete\n\n\n"
+    sleep 1
+}
+
+# Function to display top processes
+toptical() {
+    top -l 1 | head -n 15
+    sleep "$SLEEP_TIME"
+}
+
+# Function to display memory info
+memtical() {
+    vm_stat | perl -ne '/page size of (\d+)/ and $size=$1; /Pages\s+([^:]+)[^\d]+(\d+)/ and printf("%-16s % 16.2f Mi\n", "$1:", $2 * $size / 1048576);'
+    sleep "$SLEEP_TIME"
+}
+
+# Function to display IP addresses
+iptical() {
+    local ips=($(ifconfig | grep "inet " | grep -v 127.0.0.1 | awk '{print $2}'))
+    for ((i=1; i<=100; i++)); do
+        move_cursor $(( RANDOM % LINES )) $(( RANDOM % COLUMNS ))
+        echo "${ips[RANDOM % ${#ips[@]}]}"
+    done
+    sleep "$SLEEP_TIME"
+}
 
 # Main function to run the script
 main() {
