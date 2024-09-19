@@ -149,9 +149,17 @@ memtical() {
 # Function to display IP addresses
 iptical() {
     local ips=($(ifconfig | grep "inet " | grep -v 127.0.0.1 | awk '{print $2}'))
+    if [ ${#ips[@]} -eq 0 ]; then
+        print_color "YELLOW" "No IP addresses found."
+        return 1
+    fi
     for ((i=1; i<=100; i++)); do
-        move_cursor $(( RANDOM % LINES )) $(( RANDOM % COLUMNS ))
-        echo "${ips[RANDOM % ${#ips[@]}]}"
+        if [ $LINES -gt 0 ] && [ $COLUMNS -gt 0 ]; then
+            move_cursor $(( RANDOM % LINES )) $(( RANDOM % COLUMNS ))
+            echo "${ips[RANDOM % ${#ips[@]}]}"
+        else
+            echo "${ips[RANDOM % ${#ips[@]}]}"
+        fi
     done
     sleep "$SLEEP_TIME"
 }
