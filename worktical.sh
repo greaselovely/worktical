@@ -95,6 +95,41 @@ scrolltical() {
     done
 }
 
+# Function to simulate packet capture
+packetical() {
+    local protocols=("TCP" "UDP" "ICMP" "HTTP" "HTTPS" "DNS" "FTP" "SSH")
+    local ips=("192.168.1." "10.0.0." "172.16.0." "8.8.8.8" "1.1.1.1" "204.79.197.")
+    local ports=("80" "443" "53" "22" "21" "3306" "5432" "8080")
+    local duration=15  # Duration in seconds
+
+    clear_screen
+    print_color "CYAN" "Packet Capture Simulation"
+
+    local start_time=$SECONDS
+    local packet_num=1
+    while (( SECONDS - start_time < duration )); do
+        local src_ip="${ips[$RANDOM % ${#ips[@]}]}$((RANDOM % 256))"
+        local dst_ip="${ips[$RANDOM % ${#ips[@]}]}$((RANDOM % 256))"
+        local protocol="${protocols[$RANDOM % ${#protocols[@]}]}"
+        local src_port="${ports[$RANDOM % ${#ports[@]}]}"
+        local dst_port="${ports[$RANDOM % ${#ports[@]}]}"
+        local size=$((RANDOM % 1465 + 64))  # Packet sizes between 64 and 1528 bytes
+
+        printf "%05d %s.%06d %s:%s → %s:%s %s %d bytes\n" \
+               $packet_num \
+               "$(date +%H:%M:%S)" "$((RANDOM % 1000000))" \
+               "$src_ip" "$src_port" \
+               "$dst_ip" "$dst_port" \
+               "$protocol" "$size"
+
+        packet_num=$((packet_num + 1))
+        sleep 0.1
+    done
+
+    sleep "$SLEEP_TIME"
+}
+
+
 snowtical() {
     local characters=(' ' '.' ':' '=' '+' '*' '#' '%' '@')
     local duration=10  # Duration in seconds
