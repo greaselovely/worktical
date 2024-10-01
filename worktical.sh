@@ -71,68 +71,21 @@ eyetical() {
     sleep "$delay"
 }
 
-# macOS compatible version of find_random_readable_file function
 find_random_readable_file() {
-    local max_depth=3
-    local min_size=1  # 1 byte
-    local max_size=10485760  # 10MB
+    local files=$(find "$HOME" -maxdepth 1 -type f 2>/dev/null)
+    local suitable_files=()
 
-    echo "Current user: $(whoami)" >&2
-    echo "Home directory: $HOME" >&2
-    echo "Searching for files in $HOME with max depth $max_depth" >&2
-
-    # Use find to get all potentially readable files within size limits
-    local find_output
-    find_output=$(find "$HOME" -maxdepth $max_depth -type f \( -perm -u=r -o -perm -g=r -o -perm -o=r \) -size +${min_size}c -size -${max_size}c 2>&1)
-    local find_exit_code=$?
-
-    if [ $find_exit_code -ne 0 ]; then
-        echo "Error occurred during find command:" >&2
-        echo "$find_output" >&2
-        return 1
-    fi
-
-    local files="$find_output"
-
-    if [[ -z "$files" ]]; then
-        echo "No files found matching initial criteria" >&2
-        echo "Attempting to list contents of $HOME:" >&2
-        ls -la "$HOME" >&2
-        return 1
-    fi
-
-    echo "Found $(echo "$files" | wc -l) files matching initial criteria" >&2
-
-    # Process files one by one
-    local suitable_file=""
     while IFS= read -r file; do
-        if [[ -r "$file" ]]; then
-            echo "Checking file: $file" >&2
-            if file -b "$file" 2>/dev/null | grep -qiE "text|script|source|empty"; then
-                echo "File is text/script/empty" >&2
-                local line_count=$(wc -l < "$file" 2>/dev/null)
-                if [[ $? -eq 0 && $line_count -ge 1 ]]; then
-                    echo "File has $line_count line(s)" >&2
-                    suitable_file="$file"
-                    break
-                else
-                    echo "File is empty or couldn't count lines" >&2
-                fi
-            else
-                echo "File is not text/script/empty" >&2
-            fi
-        else
-            echo "File is not readable: $file" >&2
+        if [[ -r "$file" ]] && file -b "$file" | grep -qiE "text|script|source"; then
+            suitable_files+=("$file")
         fi
     done <<< "$files"
 
-    if [[ -z "$suitable_file" ]]; then
-        echo "No suitable readable file found" >&2
+    if [[ ${#suitable_files[@]} -eq 0 ]]; then
         return 1
     fi
 
-    echo "Suitable file found: $suitable_file" >&2
-    echo "$suitable_file"
+    echo "${suitable_files[RANDOM % ${#suitable_files[@]}]}"
 }
 
 # Function to display scrolling text
