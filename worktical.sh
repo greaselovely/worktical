@@ -205,10 +205,19 @@ toptical() {
     sleep "$SLEEP_TIME"
 }
 
-# Function to display memory info
 memtical() {
-    vm_stat | perl -ne '/page size of (\d+)/ and $size=$1; /Pages\s+([^:]+)[^\d]+(\d+)/ and printf("%-16s % 16.2f Mi\n", "$1:", $2 * $size / 1048576);'
-    sleep "$SLEEP_TIME"
+    if [[ "$(uname)" == "Darwin" ]]; then
+        # macOS
+        vm_stat | perl -ne '/page size of (\d+)/ and $size=$1; /Pages\s+([^:]+)[^\d]+(\d+)/ and printf("%-16s % 16.2f Mi\n", "$1:", $2 * $size / 1048576);'
+    elif [[ "$(uname)" == "Linux" ]]; then
+        # Linux (Ubuntu)
+        free -m | awk 'NR==2 {printf "%-16s % 16.2f Mi\n", "Free:", $4}
+                       NR==2 {printf "%-16s % 16.2f Mi\n", "Used:", $3}
+                       NR==2 {printf "%-16s % 16.2f Mi\n", "Total:", $2}'
+    else
+        echo "Unsupported operating system"
+    fi
+    sleep "${SLEEP_TIME:-1}"  # Default to 1 second if SLEEP_TIME is not set
 }
 
 # Function to display IP addresses
