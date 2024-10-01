@@ -71,39 +71,48 @@ eyetical() {
     sleep "$delay"
 }
 
-# Function to find random readable files including Python
+# Debugging version of find_random_readable_file function
 find_random_readable_file() {
-    local max_depth=10  # Adjust this value to control how deep the search goes
-    local min_size=100  # Minimum file size in bytes
+    local max_depth=3  # Reduced depth for faster debugging
+    local min_size=10  # Reduced minimum size for testing
     local max_size=1048576  # Maximum file size (1MB)
 
+    echo "Searching for files in $HOME with max depth $max_depth" >&2
+
     # Use find to get all readable files within size limits
-    local files=$(find "$HOME" -maxdepth $max_depth -type f -readable -size +${min_size}c -size -${max_size}c -print0 2>/dev/null | xargs -0 echo)
+    local files=$(find "$HOME" -maxdepth $max_depth -type f -readable -size +${min_size}c -size -${max_size}c 2>/dev/null)
 
     if [[ -z "$files" ]]; then
-        echo "No matching files found" >&2
+        echo "No files found matching initial criteria" >&2
         return 1
     fi
 
-    # Shuffle the files and process them one by one
-    local IFS=$'\n'
+    echo "Found $(echo "$files" | wc -l) files matching initial criteria" >&2
+
+    # Process files one by one
     local suitable_file=""
-    for file in $(echo "$files" | sort -R); do
-        # Check if the file is a text file (including Python scripts)
+    while IFS= read -r file; do
+        echo "Checking file: $file" >&2
         if file -b "$file" | grep -qE "text|script|source"; then
-            # Check if the file has at least 5 lines
+            echo "File is text/script" >&2
             if [[ $(wc -l < "$file") -ge 5 ]]; then
+                echo "File has 5 or more lines" >&2
                 suitable_file="$file"
                 break
+            else
+                echo "File has fewer than 5 lines" >&2
             fi
+        else
+            echo "File is not text/script" >&2
         fi
-    done
+    done <<< "$files"
 
     if [[ -z "$suitable_file" ]]; then
         echo "No suitable readable file found" >&2
         return 1
     fi
 
+    echo "Suitable file found: $suitable_file" >&2
     echo "$suitable_file"
 }
 
