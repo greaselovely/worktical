@@ -71,26 +71,38 @@ eyetical() {
     sleep "$delay"
 }
 
-# Function to find random readable text files
-find_random_readable_file() {
-    local files
-    if [[ "$(uname)" == "Darwin" ]]; then
-        # macOS
-        files=$(find "$HOME" -type f -readable -size +1c \( -name "*.txt" -o -name "*.log" -o -name "*.md" -o -name "*.csv" \) 2>/dev/null | sort -R | head -n 1)
-    elif [[ "$(uname)" == "Linux" ]]; then
-        # Linux
-        files=$(find "$HOME" -type f -readable -size +1c \( -name "*.txt" -o -name "*.log" -o -name "*.md" -o -name "*.csv" \) 2>/dev/null | shuf -n 1)
-    else
-        echo "Unsupported operating system" >&2
-        return 1
-    fi
+# Function to find random readable text files including Python
+find_random_readable_text_file() {
+    local max_depth=5  # Adjust this value to control how deep the search goes
+    local min_size=100  # Minimum file size in bytes
+    local max_size=1048576  # Maximum file size (1MB)
+
+    local files=$(find "$HOME" -maxdepth $max_depth -type f -readable -size +${min_size}c -size -${max_size}c -print0 2>/dev/null | 
+        xargs -0 file -F '|' |
+        grep -E '|.*(text|python script|shell script|source)' |
+        cut -d'|' -f1 |
+        sort -R |
+        head -n 50)  # Get 50 random files to increase chances of finding a suitable one
 
     if [[ -z "$files" ]]; then
         echo "No matching files found" >&2
         return 1
     fi
 
-    echo "$files"
+    local suitable_file=""
+    while IFS= read -r file; do
+        if [[ -r "$file" ]] && file "$file" | grep -qE "(ASCII text|Unicode text|UTF-8 text|python script|shell script|source)" && [[ $(wc -l < "$file") -ge 5 ]]; then
+            suitable_file="$file"
+            break
+        fi
+    done <<< "$files"
+
+    if [[ -z "$suitable_file" ]]; then
+        echo "No suitable text file found" >&2
+        return 1
+    fi
+
+    echo "$suitable_file"
 }
 
 
