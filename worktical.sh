@@ -74,8 +74,10 @@ eyetical() {
 mazetical() {
     local width=20
     local height=10
-    local wall='█'
+    local wall='#'
     local path=' '
+
+    echo "Generating maze of size ${width}x${height}" >&2
 
     # Initialize the maze with walls
     local maze=()
@@ -119,12 +121,15 @@ mazetical() {
     maze[start_y]="${maze[start_y]:0:$start_x}$path${maze[start_y]:$((start_x+1))}"
     carve_path $start_x $start_y
 
+    echo "Maze generation complete. Printing maze:" >&2
+
     # Print the maze
     clear
     for row in "${maze[@]}"; do
         echo "$row"
     done
 
+    echo "Maze printed. Sleeping for ${SLEEP_TIME:-3} seconds." >&2
     sleep "${SLEEP_TIME:-3}"
 }
 
