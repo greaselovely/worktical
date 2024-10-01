@@ -218,20 +218,47 @@ memtical() {
 
 # Function to display IP addresses
 iptical() {
-    local ips=($(ip addr | grep "inet " | grep -v 127.0.0.1 | awk '{print $2}'))
+    local ips=()
+    if [[ "$(uname)" == "Darwin" ]]; then
+        # macOS
+        ips=($(ifconfig | grep "inet " | grep -v 127.0.0.1 | awk '{print $2}'))
+    elif [[ "$(uname)" == "Linux" ]]; then
+        # Linux (Ubuntu)
+        ips=($(ip addr | grep "inet " | grep -v 127.0.0.1 | awk '{print $2}'))
+    else
+        echo "Unsupported operating system"
+        return 1
+    fi
+
     if [ ${#ips[@]} -eq 0 ]; then
         print_color "YELLOW" "No IP addresses found."
         return 1
     fi
+
     for ((i=1; i<=100; i++)); do
-        if [ $LINES -gt 0 ] && [ $COLUMNS -gt 0 ]; then
-            move_cursor $(( RANDOM % LINES )) $(( RANDOM % COLUMNS ))
+        if [ -n "$LINES" ] && [ -n "$COLUMNS" ] && [ $LINES -gt 0 ] && [ $COLUMNS -gt 0 ]; then
+            tput cup $(( RANDOM % LINES )) $(( RANDOM % COLUMNS ))
             echo "${ips[RANDOM % ${#ips[@]}]}"
         else
             echo "${ips[RANDOM % ${#ips[@]}]}"
         fi
     done
-    sleep "$SLEEP_TIME"
+    sleep "${SLEEP_TIME:-1}"  # Default to 1 second if SLEEP_TIME is not set
+}
+
+# Helper function for colored output
+print_color() {
+    local color_code
+    case "$1" in
+        "RED") color_code="31" ;;
+        "GREEN") color_code="32" ;;
+        "YELLOW") color_code="33" ;;
+        "BLUE") color_code="34" ;;
+        "MAGENTA") color_code="35" ;;
+        "CYAN") color_code="36" ;;
+        *) color_code="0" ;;
+    esac
+    printf "\033[${color_code}m%s\033[0m\n" "$2"
 }
 
 # New function to simulate network traffic
