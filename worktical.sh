@@ -72,12 +72,10 @@ eyetical() {
 }
 
 mazetical() {
-    local width=20
-    local height=10
+    local width=21  # Odd number to ensure border
+    local height=11 # Odd number to ensure border
     local wall='#'
     local path=' '
-
-    echo "Generating maze of size ${width}x${height}" >&2
 
     # Initialize the maze with walls
     local maze=()
@@ -85,43 +83,28 @@ mazetical() {
         maze[i]=$(printf '%*s' "$width" | tr ' ' "$wall")
     done
 
-    # Function to check if a cell is within bounds and is a wall
-    is_valid_wall() {
-        local x=$1
-        local y=$2
-        [[ $x -ge 0 && $x -lt $width && $y -ge 0 && $y -lt $height && "${maze[y]:$x:1}" == "$wall" ]]
-    }
-
-    # Recursive function to carve paths
+    # Function to carve a path
     carve_path() {
         local x=$1
         local y=$2
-        local directions=("0 -1" "0 1" "-1 0" "1 0")
-        
-        # Shuffle directions
-        local shuffled=($(shuf -e "${directions[@]}"))
-        
-        for dir in "${shuffled[@]}"; do
-            read -r dx dy <<< "$dir"
-            local nx=$((x + 2*dx))
-            local ny=$((y + 2*dy))
-            
-            if is_valid_wall $nx $ny; then
-                maze[y]="${maze[y]:0:$x}$path${maze[y]:$((x+1))}"
-                maze[$((y+dy))]="${maze[$((y+dy))]:0:$((x+dx))}$path${maze[$((y+dy))]:$((x+dx+1))}"
-                maze[ny]="${maze[ny]:0:$nx}$path${maze[ny]:$((nx+1))}"
-                carve_path $nx $ny
-            fi
-        done
+        maze[y]="${maze[y]:0:$x}$path${maze[y]:$((x+1))}"
     }
 
-    # Start carving from a random point
-    local start_x=$((RANDOM % (width/2) * 2 + 1))
-    local start_y=$((RANDOM % (height/2) * 2 + 1))
-    maze[start_y]="${maze[start_y]:0:$start_x}$path${maze[start_y]:$((start_x+1))}"
-    carve_path $start_x $start_y
+    # Carve the maze
+    for ((y=1; y<height-1; y+=2)); do
+        for ((x=1; x<width-1; x+=2)); do
+            carve_path $x $y
+            if ((RANDOM % 2 == 0)) && ((x < width-2)); then
+                carve_path $((x+1)) $y
+            elif ((y < height-2)); then
+                carve_path $x $((y+1))
+            fi
+        done
+    done
 
-    echo "Maze generation complete. Printing maze:" >&2
+    # Ensure start and end points
+    carve_path 1 0
+    carve_path $((width-2)) $((height-1))
 
     # Print the maze
     clear
@@ -129,8 +112,7 @@ mazetical() {
         echo "$row"
     done
 
-    echo "Maze printed. Sleeping for ${SLEEP_TIME:-3} seconds." >&2
-    sleep "${SLEEP_TIME:-3}"
+    sleep "${SLEEP_TIME:-0.3}"
 }
 
 find_random_readable_file() {
