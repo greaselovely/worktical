@@ -72,7 +72,7 @@ eyetical() {
 }
 
 # Function to find random readable text files including Python
-find_random_readable_text_file() {
+find_random_readable_file() {
     local max_depth=5  # Adjust this value to control how deep the search goes
     local min_size=100  # Minimum file size in bytes
     local max_size=1048576  # Maximum file size (1MB)
