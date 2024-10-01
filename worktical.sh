@@ -72,8 +72,8 @@ eyetical() {
 }
 
 mazetical() {
-    local width=21  # Odd number to ensure border
-    local height=11 # Odd number to ensure border
+    local width=91  # Odd number to ensure border
+    local height=51 # Odd number to ensure border
     local wall='#'
     local path=' '
 
