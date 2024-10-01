@@ -215,7 +215,6 @@ memtical() {
                        NR==2 {printf "%-16s % 16.2f Mi\n", "Used:", $3}
                        NR==2 {printf "%-16s % 16.2f Mi\n", "Total:", $2}'
     fi
-    sleep "${SLEEP_TIME:-1}"  # Default to 1 second if SLEEP_TIME is not set
 }
 
 # Function to display IP addresses
