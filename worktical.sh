@@ -71,40 +71,41 @@ eyetical() {
     sleep "$delay"
 }
 
-# Function to find random readable text files including Python
+# Function to find random readable files including Python
 find_random_readable_file() {
     local max_depth=5  # Adjust this value to control how deep the search goes
     local min_size=100  # Minimum file size in bytes
     local max_size=1048576  # Maximum file size (1MB)
 
-    local files=$(find "$HOME" -maxdepth $max_depth -type f -readable -size +${min_size}c -size -${max_size}c -print0 2>/dev/null | 
-        xargs -0 file -F '|' |
-        grep -E '|.*(text|python script|shell script|source)' |
-        cut -d'|' -f1 |
-        sort -R |
-        head -n 50)  # Get 50 random files to increase chances of finding a suitable one
+    # Use find to get all readable files within size limits
+    local files=$(find "$HOME" -maxdepth $max_depth -type f -readable -size +${min_size}c -size -${max_size}c -print0 2>/dev/null | xargs -0 echo)
 
     if [[ -z "$files" ]]; then
         echo "No matching files found" >&2
         return 1
     fi
 
+    # Shuffle the files and process them one by one
+    local IFS=$'\n'
     local suitable_file=""
-    while IFS= read -r file; do
-        if [[ -r "$file" ]] && file "$file" | grep -qE "(ASCII text|Unicode text|UTF-8 text|python script|shell script|source)" && [[ $(wc -l < "$file") -ge 5 ]]; then
-            suitable_file="$file"
-            break
+    for file in $(echo "$files" | sort -R); do
+        # Check if the file is a text file (including Python scripts)
+        if file -b "$file" | grep -qE "text|script|source"; then
+            # Check if the file has at least 5 lines
+            if [[ $(wc -l < "$file") -ge 5 ]]; then
+                suitable_file="$file"
+                break
+            fi
         fi
-    done <<< "$files"
+    done
 
     if [[ -z "$suitable_file" ]]; then
-        echo "No suitable text file found" >&2
+        echo "No suitable readable file found" >&2
         return 1
     fi
 
     echo "$suitable_file"
 }
-
 
 # Function to display scrolling text
 scrolltical() {
