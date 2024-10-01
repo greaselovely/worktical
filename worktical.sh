@@ -238,7 +238,6 @@ nettical() {
     local connections=("-" "=" "~" "־" "‥" "…")
     
     clear_screen
-    print_color "CYAN" "Network Traffic Simulation"
     
     for ((i=0; i<height; i++)); do
         local line=""
@@ -285,7 +284,6 @@ main() {
     while true; do
         clear_screen
         func="${functions[$RANDOM % ${#functions[@]}]}"
-        print_color "CYAN" "Executing: $func"
         if ! eval "$func"; then
             print_color "RED" "Function $func failed. Continuing..."
         fi
