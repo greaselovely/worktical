@@ -134,7 +134,6 @@ snowtical() {
     local duration=10  # Duration in seconds
 
     clear_screen
-    print_color "WHITE" "Old TV Static Simulation"
     
     hide_cursor
     
