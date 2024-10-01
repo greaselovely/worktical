@@ -98,7 +98,7 @@ scrolltical() {
 # Function to simulate packet capture
 packetical() {
     local protocols=("TCP" "UDP" "ICMP" "HTTP" "HTTPS" "DNS" "FTP" "SSH")
-    local ips=("192.168.1." "10.0.0." "172.16.0." "8.8.8.8" "1.1.1.1" "204.79.197.")
+    local ips=("192.168.1" "10.0.0" "172.16.0" "8.8.8" "1.1.1" "204.79.197")
     local ports=("80" "443" "53" "22" "21" "3306" "5432" "8080")
     local duration=15  # Duration in seconds
 
@@ -107,8 +107,8 @@ packetical() {
     local start_time=$SECONDS
     local packet_num=1
     while (( SECONDS - start_time < duration )); do
-        local src_ip="${ips[$RANDOM % ${#ips[@]}]}$((RANDOM % 256))"
-        local dst_ip="${ips[$RANDOM % ${#ips[@]}]}$((RANDOM % 256))"
+        local src_ip="${ips[$RANDOM % ${#ips[@]}]}.$((RANDOM % 256))"
+        local dst_ip="${ips[$RANDOM % ${#ips[@]}]}.$((RANDOM % 256))"
         local protocol="${protocols[$RANDOM % ${#protocols[@]}]}"
         local src_port="${ports[$RANDOM % ${#ports[@]}]}"
         local dst_port="${ports[$RANDOM % ${#ports[@]}]}"
@@ -125,7 +125,12 @@ packetical() {
         sleep 0.1
     done
 
-    sleep "$SLEEP_TIME"
+    sleep "${SLEEP_TIME:-1}"  # Default to 1 second if SLEEP_TIME is not set
+}
+
+# Helper function to clear the screen
+clear_screen() {
+    printf "\033c"
 }
 
 
