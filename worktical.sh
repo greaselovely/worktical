@@ -103,7 +103,6 @@ packetical() {
     local duration=15  # Duration in seconds
 
     clear_screen
-    print_color "CYAN" "Packet Capture Simulation"
 
     local start_time=$SECONDS
     local packet_num=1
