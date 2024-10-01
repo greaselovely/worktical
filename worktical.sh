@@ -71,19 +71,33 @@ eyetical() {
     sleep "$delay"
 }
 
-# Debugging version of find_random_readable_file function
+# More lenient version of find_random_readable_file function with extra debugging
 find_random_readable_file() {
-    local max_depth=3  # Reduced depth for faster debugging
-    local min_size=10  # Reduced minimum size for testing
-    local max_size=1048576  # Maximum file size (1MB)
+    local max_depth=3
+    local min_size=1  # Reduced to 1 byte
+    local max_size=10485760  # Increased to 10MB
 
+    echo "Current user: $(whoami)" >&2
+    echo "Home directory: $HOME" >&2
     echo "Searching for files in $HOME with max depth $max_depth" >&2
 
-    # Use find to get all readable files within size limits
-    local files=$(find "$HOME" -maxdepth $max_depth -type f -readable -size +${min_size}c -size -${max_size}c 2>/dev/null)
+    # Use find to get all readable files within size limits, with error checking
+    local find_output
+    find_output=$(find "$HOME" -maxdepth $max_depth -type f -readable -size +${min_size}c -size -${max_size}c 2>&1)
+    local find_exit_code=$?
+
+    if [ $find_exit_code -ne 0 ]; then
+        echo "Error occurred during find command:" >&2
+        echo "$find_output" >&2
+        return 1
+    fi
+
+    local files="$find_output"
 
     if [[ -z "$files" ]]; then
         echo "No files found matching initial criteria" >&2
+        echo "Attempting to list contents of $HOME:" >&2
+        ls -la "$HOME" >&2
         return 1
     fi
 
@@ -93,17 +107,18 @@ find_random_readable_file() {
     local suitable_file=""
     while IFS= read -r file; do
         echo "Checking file: $file" >&2
-        if file -b "$file" | grep -qE "text|script|source"; then
-            echo "File is text/script" >&2
-            if [[ $(wc -l < "$file") -ge 5 ]]; then
-                echo "File has 5 or more lines" >&2
+        if file -b "$file" 2>/dev/null | grep -qE "text|script|source|empty"; then
+            echo "File is text/script/empty" >&2
+            local line_count=$(wc -l < "$file" 2>/dev/null)
+            if [[ $? -eq 0 && $line_count -ge 1 ]]; then
+                echo "File has $line_count line(s)" >&2
                 suitable_file="$file"
                 break
             else
-                echo "File has fewer than 5 lines" >&2
+                echo "File is empty or couldn't count lines" >&2
             fi
         else
-            echo "File is not text/script" >&2
+            echo "File is not text/script/empty" >&2
         fi
     done <<< "$files"
 
