@@ -213,7 +213,7 @@ memtical() {
 
 # Function to display IP addresses
 iptical() {
-    local ips=($(ifconfig | grep "inet " | grep -v 127.0.0.1 | awk '{print $2}'))
+    local ips=($(ip addr | grep "inet " | grep -v 127.0.0.1 | awk '{print $2}'))
     if [ ${#ips[@]} -eq 0 ]; then
         print_color "YELLOW" "No IP addresses found."
         return 1
