@@ -73,8 +73,26 @@ eyetical() {
 
 # Function to find random readable text files
 find_random_readable_file() {
-    find "$HOME" -type f -readable -size +1c \( -name "*.txt" -o -name "*.log" -o -name "*.md" -o -name "*.csv" \) 2>/dev/null | shuf -n 1
+    local files
+    if [[ "$(uname)" == "Darwin" ]]; then
+        # macOS
+        files=$(find "$HOME" -type f -readable -size +1c \( -name "*.txt" -o -name "*.log" -o -name "*.md" -o -name "*.csv" \) 2>/dev/null | sort -R | head -n 1)
+    elif [[ "$(uname)" == "Linux" ]]; then
+        # Linux
+        files=$(find "$HOME" -type f -readable -size +1c \( -name "*.txt" -o -name "*.log" -o -name "*.md" -o -name "*.csv" \) 2>/dev/null | shuf -n 1)
+    else
+        echo "Unsupported operating system" >&2
+        return 1
+    fi
+
+    if [[ -z "$files" ]]; then
+        echo "No matching files found" >&2
+        return 1
+    fi
+
+    echo "$files"
 }
+
 
 # Function to display scrolling text
 scrolltical() {
